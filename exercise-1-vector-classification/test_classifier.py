@@ -59,12 +59,12 @@ def test_cosine_similarity_known_values():
 @pytest.mark.parametrize(
     "query, group_a, group_b",
     [
-        ([0.5, 0.5], [], [[0.0, 1.0]]),            # empty group A
-        ([0.5, 0.5], [[1.0, 0.0]], []),            # empty group B
-        ([], [[1.0, 0.0]], [[0.0, 1.0]]),          # empty query
-        ([0.5, 0.5, 0.5], [[1.0, 0.0]], [[0.0, 1.0]]),  # query dimension mismatch
-        ([0.5, 0.5], [[1.0, 0.0], [1.0]], [[0.0, 1.0]]),  # ragged group
-        ([0.0, 0.0], [[1.0, 0.0]], [[0.0, 1.0]]),  # zero query vector
+        ([0.5, 0.5], [], [[0.0, 1.0]]),
+        ([0.5, 0.5], [[1.0, 0.0]], []),
+        ([], [[1.0, 0.0]], [[0.0, 1.0]]),
+        ([0.5, 0.5, 0.5], [[1.0, 0.0]], [[0.0, 1.0]]),
+        ([0.5, 0.5], [[1.0, 0.0], [1.0]], [[0.0, 1.0]]),
+        ([0.0, 0.0], [[1.0, 0.0]], [[0.0, 1.0]]),
     ],
 )
 def test_invalid_input_raises_value_error(query, group_a, group_b):
