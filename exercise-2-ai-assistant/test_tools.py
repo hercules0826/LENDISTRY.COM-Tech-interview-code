@@ -21,7 +21,7 @@ def test_whole_number_float_quantity_is_accepted():
     assert not is_error
     assert json.loads(content)["quantity"] == 2
 
-
+ 
 @pytest.mark.parametrize(
     "args, expected_fragment",
     [
