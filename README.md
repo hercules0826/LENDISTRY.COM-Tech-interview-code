@@ -8,9 +8,6 @@ directory, was developed on its own branch, and is submitted as its own pull req
 | 1 | `exercise-1-vector-classification/` | Decide whether a query vector belongs to Group A or Group B, in pure Python with no ML or similarity libraries. |
 | 2 | `exercise-2-ai-assistant/` | A terminal chat assistant that lets an LLM decide when to call a `calculate_total` tool. Built without agent frameworks. |
 
-Each exercise directory has its own `README.md` covering the approach, assumptions,
-and how to run it.
-
 ## Python setup
 
 You need **Python 3.10 or newer**. The exercises were developed on Python 3.11.
@@ -37,7 +34,14 @@ python -m pytest exercise-2-ai-assistant
 
 Exercise 2 calls an LLM API. It reads the API key from an environment variable,
 so no credential is ever stored in the repository. `.env` files are git-ignored.
-See `exercise-2-ai-assistant/README.md` for details.
+
+```bash
+export ANTHROPIC_API_KEY=...          # macOS / Linux
+$env:ANTHROPIC_API_KEY = "..."        # Windows PowerShell
+
+cd exercise-2-ai-assistant
+python main.py
+```
 
 ## Workflow
 
