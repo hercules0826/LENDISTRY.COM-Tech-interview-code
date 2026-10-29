@@ -1,5 +1,3 @@
-"""Terminal entry point: python main.py [--verbose]"""
-
 import argparse
 import json
 import os

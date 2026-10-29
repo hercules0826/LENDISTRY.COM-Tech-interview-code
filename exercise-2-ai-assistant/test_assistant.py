@@ -1,5 +1,3 @@
-"""Tests for the tool-use loop, using a scripted fake client instead of the real API."""
-
 import json
 from types import SimpleNamespace
 
@@ -21,8 +19,6 @@ def response(stop_reason, *content):
 
 
 class FakeClient:
-    """Returns scripted responses and records the messages sent on each call."""
-
     def __init__(self, *responses):
         self._responses = list(responses)
         self.calls = []
@@ -72,7 +68,6 @@ def test_conversation_history_carries_across_turns():
 
     assert assistant.ask("What about 5 laptops?") == "The total for 5 laptops is $4,675."
 
-    # The second turn's first request includes the whole first turn.
     second_turn_request = client.calls[2]
     assert [m["role"] for m in second_turn_request] == ["user", "assistant", "user", "assistant", "user"]
     assert second_turn_request[-1]["content"] == "What about 5 laptops?"

@@ -1,29 +1,18 @@
-"""Tools the assistant can call, their JSON schemas, and a safe dispatcher.
-
-The LLM never runs code itself. It asks for a tool by name with JSON
-arguments, and `run_tool` validates those arguments, runs the matching Python
-function, and returns a result string plus an error flag. Every failure
-becomes an error message the model can read and recover from, never an
-exception that crashes the chat.
-"""
-
 import json
 import math
 from typing import Any, Callable
 
 
 def calculate_total(price: float, quantity: int, tax_rate: float) -> float:
-    # Provided function, unchanged.
     return price * quantity * (1 + tax_rate)
 
 
 class ToolArgumentError(ValueError):
-    """Raised when the model supplies arguments a tool cannot accept."""
+    pass
 
 
 def _number(args: dict, name: str) -> float:
     value = args.get(name)
-    # bool is a subclass of int in Python; reject it explicitly.
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ToolArgumentError(f"'{name}' must be a number, got {value!r}.")
     if not math.isfinite(value):
@@ -32,7 +21,6 @@ def _number(args: dict, name: str) -> float:
 
 
 def validate_calculate_total_args(args: Any) -> dict:
-    """Check types and ranges, and return clean keyword arguments."""
     if not isinstance(args, dict):
         raise ToolArgumentError("Arguments must be a JSON object.")
 
@@ -107,7 +95,6 @@ _HANDLERS: dict[str, Callable[[Any], str]] = {
 
 
 def run_tool(name: str, args: Any) -> tuple[str, bool]:
-    """Run a tool by name. Returns (content, is_error) and never raises."""
     handler = _HANDLERS.get(name)
     if handler is None:
         return f"Error: unknown tool '{name}'. Available tools: {', '.join(_HANDLERS)}.", True
@@ -115,5 +102,5 @@ def run_tool(name: str, args: Any) -> tuple[str, bool]:
         return handler(args), False
     except ToolArgumentError as exc:
         return f"Error: invalid arguments for {name}: {exc}", True
-    except Exception as exc:  # A failing tool must not crash the chat.
+    except Exception as exc:
         return f"Error: {name} failed: {type(exc).__name__}: {exc}", True

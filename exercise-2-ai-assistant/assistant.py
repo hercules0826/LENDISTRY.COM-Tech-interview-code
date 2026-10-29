@@ -1,18 +1,3 @@
-"""A multi-turn chat assistant with a hand-written tool-use loop.
-
-There is no agent framework. Each user message runs the following loop:
-
-    send history + tool definitions to the LLM
-    while the LLM answers with stop_reason == "tool_use":
-        run each requested tool locally (validated, never raising)
-        send the results back as tool_result blocks
-    return the LLM's final text
-
-The full history, including tool calls and results, is kept in
-`self.messages`, so follow-ups such as "What about 5 laptops?" can reuse
-the price and tax rate from earlier turns.
-"""
-
 import os
 from typing import Any, Callable, Optional
 
@@ -42,7 +27,7 @@ ToolCallback = Callable[[str, Any, str, bool], None]
 
 
 class AssistantError(Exception):
-    """A turn could not be completed. The conversation is left unchanged."""
+    pass
 
 
 class Assistant:
@@ -53,7 +38,6 @@ class Assistant:
         max_tool_rounds: int = MAX_TOOL_ROUNDS,
         on_tool_call: Optional[ToolCallback] = None,
     ):
-        # anthropic.Anthropic() reads ANTHROPIC_API_KEY from the environment.
         self.client = client if client is not None else anthropic.Anthropic()
         self.model = model or os.environ.get("ANTHROPIC_MODEL", DEFAULT_MODEL)
         self.max_tool_rounds = max_tool_rounds
@@ -61,11 +45,6 @@ class Assistant:
         self.messages: list[dict] = []
 
     def ask(self, user_text: str) -> str:
-        """Send one user message and return the assistant's final reply.
-
-        If the turn fails, every message it added is removed, so the history
-        stays valid and the user can simply try again.
-        """
         checkpoint = len(self.messages)
         self.messages.append({"role": "user", "content": user_text})
         try:
@@ -83,7 +62,6 @@ class Assistant:
             if response.stop_reason == "max_tokens":
                 raise AssistantError("The response was cut off (max_tokens reached).")
 
-            # Append the full content (including any thinking blocks) unchanged.
             self.messages.append({"role": "assistant", "content": response.content})
 
             if response.stop_reason != "tool_use":
@@ -92,7 +70,6 @@ class Assistant:
             tool_results = [
                 self._execute(block) for block in response.content if block.type == "tool_use"
             ]
-            # All results for one assistant message go back in a single user message.
             self.messages.append({"role": "user", "content": tool_results})
 
         raise AssistantError(
@@ -106,9 +83,7 @@ class Assistant:
             system=SYSTEM_PROMPT,
             tools=TOOL_DEFINITIONS,
             messages=self.messages,
-            # Simple chat: low effort keeps replies fast and cheap.
             output_config={"effort": "low"},
-            # If a safety classifier declines, retry server-side on a recommended model.
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
         )
